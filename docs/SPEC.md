@@ -77,7 +77,13 @@ Public to all logged-in employees; a headline feature.
 
 **Ranking:** default by number of winning ads; owner can switch to profitable spend, win %, revenue, etc.
 
-**Winning ad definition is configurable** by the owner (e.g. minimum spend threshold + target CPA or ROAS). Use consistent attribution rules for fair comparison.
+**Winning ad definition is configurable** by the owner. Use consistent attribution rules for fair comparison.
+
+**Current definition (Eric, 2026-10-25):** an ad is a winner in Northbeam when **all** of these are true:
+
+- Spend **over $10,000**
+- CAC **below $70**
+- New visitor % **above 50%**
 
 ## 7. Winning ads dashboard
 
