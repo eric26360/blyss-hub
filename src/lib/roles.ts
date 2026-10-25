@@ -1,6 +1,7 @@
 // Who can see which page. Edit this table to change access.
+// Role names match the user_role type in the database.
 
-export type Role = "admin" | "media_buyer" | "editor" | "viewer";
+export type Role = "owner" | "strategist" | "ugc_manager" | "video_editor";
 
 export type PageKey = "overview" | "creatives" | "ads" | "tasks" | "analyze" | "team";
 
@@ -14,17 +15,17 @@ export const PAGES: { key: PageKey; label: string; href: string }[] = [
 ];
 
 export const ROLE_LABELS: Record<Role, string> = {
-  admin: "Admin",
-  media_buyer: "Media Buyer",
-  editor: "Editor / Creator",
-  viewer: "Viewer",
+  owner: "Owner",
+  strategist: "Creative Strategist",
+  ugc_manager: "UGC Manager",
+  video_editor: "Video Editor",
 };
 
 export const ROLE_ACCESS: Record<Role, PageKey[]> = {
-  admin: ["overview", "creatives", "ads", "tasks", "analyze", "team"],
-  media_buyer: ["overview", "creatives", "ads", "analyze"],
-  editor: ["overview", "creatives", "tasks", "analyze"],
-  viewer: ["overview", "ads"],
+  owner: ["overview", "creatives", "ads", "tasks", "analyze", "team"],
+  strategist: ["overview", "creatives", "ads", "tasks", "analyze"],
+  ugc_manager: ["overview", "creatives", "tasks"],
+  video_editor: ["overview", "creatives", "tasks", "analyze"],
 };
 
 export function canAccess(role: Role, page: PageKey) {

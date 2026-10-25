@@ -45,7 +45,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <p className="text-sm font-medium">{user.name}</p>
           <p className="text-xs text-stone-500">{ROLE_LABELS[user.role]}</p>
           <button onClick={signOut} className="mt-2 text-xs text-brand hover:underline">
-            Switch user
+            Sign out
           </button>
         </div>
       </aside>

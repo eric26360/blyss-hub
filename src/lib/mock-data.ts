@@ -1,16 +1,5 @@
-// Fake data for the mockup. Later this gets replaced by
+// Fake data for the mockup pages. Later this gets replaced by
 // Northbeam (ads), ClickUp (tasks), and Air (creatives).
-
-import type { Role } from "./roles";
-
-export type User = { id: string; name: string; email: string; role: Role };
-
-export const USERS: User[] = [
-  { id: "u1", name: "Eric", email: "eric@blyss.com", role: "admin" },
-  { id: "u2", name: "Jordan", email: "jordan@blyss.com", role: "media_buyer" },
-  { id: "u3", name: "Sam", email: "sam@blyss.com", role: "editor" },
-  { id: "u4", name: "Taylor", email: "taylor@blyss.com", role: "viewer" },
-];
 
 export type Platform = "Meta" | "Google" | "YouTube" | "AppLovin" | "Snapchat";
 

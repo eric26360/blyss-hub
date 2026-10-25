@@ -1,44 +1,60 @@
 "use client";
 
-// Mock login: remembers which fake user is "signed in".
-// This gets replaced by real Supabase logins later.
+// Real logins through Supabase. Loads the signed-in person's profile
+// (name and role) so pages can decide what to show.
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { USERS, type User } from "./mock-data";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { Role } from "./roles";
+
+export type User = { id: string; name: string; email: string; role: Role };
 
 type Session = {
   user: User | null;
   ready: boolean;
-  signIn: (userId: string) => void;
-  signOut: () => void;
+  signIn: (email: string, password: string) => Promise<string | null>;
+  signOut: () => Promise<void>;
 };
 
 const SessionContext = createContext<Session | null>(null);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
+  const supabase = useMemo(() => createClient(), []);
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    try {
-      const id = localStorage.getItem("blyss-user");
-      setUser(USERS.find((u) => u.id === id) ?? null);
-    } catch {}
-    setReady(true);
-  }, []);
+    const load = async (userId: string | undefined) => {
+      if (!userId) {
+        setUser(null);
+        setReady(true);
+        return;
+      }
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, role, active")
+        .eq("id", userId)
+        .single();
+      setUser(data && data.active ? { id: data.id, name: data.full_name || data.email, email: data.email, role: data.role } : null);
+      setReady(true);
+    };
 
-  const signIn = (userId: string) => {
-    setUser(USERS.find((u) => u.id === userId) ?? null);
-    try {
-      localStorage.setItem("blyss-user", userId);
-    } catch {}
+    supabase.auth.getUser().then(({ data }) => load(data.user?.id));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Defer so we don't call Supabase from inside its own callback.
+      setTimeout(() => load(session?.user.id), 0);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [supabase]);
+
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return error ? error.message : null;
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    try {
-      localStorage.removeItem("blyss-user");
-    } catch {}
   };
 
   return (

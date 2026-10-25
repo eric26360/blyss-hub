@@ -2,7 +2,7 @@
 
 -- ───────────── Roles & profiles ─────────────
 
-create type public.user_role as enum ('owner', 'strategist', 'ugc_manager');
+create type public.user_role as enum ('owner', 'strategist', 'ugc_manager', 'video_editor');
 
 create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
