@@ -194,3 +194,17 @@ Inside UGC Management. Each strategist has a monthly UGC budget set by the owner
 - Company events (meetings, creative reviews, strategy meetings, deadlines); marketing events (product and scent launches, promos, sales, ad deadlines); US shopping holidays (Valentine's, Mother's Day, Father's Day, Labor Day, Halloween, Thanksgiving, Black Friday, Cyber Monday, Christmas, New Year's, and others), with dates computed correctly each year.
 - Event fields: name, date/time, description, assigned employees, category, priority, related tasks, links.
 - Dashboard shows upcoming dates as a countdown (e.g. "Black Friday — 33 days").
+
+---
+
+## Ad naming convention (from the Blyss Creative Log sheet, "NEW NAMING" tab)
+
+Ads are attributed to strategists, creators, angles, etc. by reading the ad name (`src/lib/ad-naming.ts`):
+
+`CXXXX-Y _ V# _ Concept Name _ Product _ Type _ Format _ Angle _ Scent _ Creator _ CS _ Editor _ Agency _ Destination _ Offer`
+
+- `CXXXX` = concept number (net new); `-Y` = iteration (e.g. C5436-1). `V1/V2/V3` = variation.
+- Empty slots (no creator / no agency) stay empty between separators.
+- Old convention (no strategist field): `Blyss_Product_Offer_Type_Format_Angle_USP_Scent_Agency_Destination`. Old ads can't be credited to a strategist from the name alone.
+- Separator assumed to be `_` — **to confirm with a real ad name.**
+- Sheet also tracks Winner / Loser / Testing per Creative ID (META ADS tab, ~3,900 rows) — candidate for a one-time import.
