@@ -13,6 +13,12 @@ export const STATUS_COLORS: Record<string, string> = {
   "In Progress": "bg-sky-100 text-sky-700",
   Paused: "bg-rose-100 text-rose-700",
   Done: "bg-emerald-100 text-emerald-700",
+  Completed: "bg-emerald-100 text-emerald-700",
+  Late: "bg-amber-100 text-amber-700",
+  Missing: "bg-rose-100 text-rose-700",
+  Pending: "bg-yellow-50 text-yellow-700",
+  "Day Off": "bg-sky-100 text-sky-700",
+  "Non-working day": "bg-stone-100 text-stone-500",
 };
 
 export function Badge({ label }: { label: string }) {

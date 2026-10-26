@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Card, Guard, PageHeader } from "@/components/Guard";
+import { MyCheckinStatus } from "@/components/MyCheckinStatus";
 import { ADS, CREATIVES, TASKS, creativeById } from "@/lib/mock-data";
 import { money, roas } from "@/lib/format";
 import { useSession } from "@/lib/session";
@@ -23,6 +24,7 @@ export default function OverviewPage() {
   return (
     <Guard page="overview">
       <PageHeader title={`Hi ${user?.name} 👋`} subtitle="Here's what's happening at Blyss." />
+      <MyCheckinStatus />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((s) => (
           <Card key={s.label}>

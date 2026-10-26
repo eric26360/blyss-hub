@@ -7,7 +7,14 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Role } from "./roles";
 
-export type User = { id: string; name: string; email: string; role: Role };
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  timezone: string;
+  requiresCheckins: boolean;
+};
 
 type Session = {
   user: User | null;
@@ -32,10 +39,21 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       }
       const { data } = await supabase
         .from("profiles")
-        .select("id, full_name, email, role, active")
+        .select("id, full_name, email, role, active, timezone, requires_checkins")
         .eq("id", userId)
         .single();
-      setUser(data && data.active ? { id: data.id, name: data.full_name || data.email, email: data.email, role: data.role } : null);
+      setUser(
+        data && data.active
+          ? {
+              id: data.id,
+              name: data.full_name || data.email,
+              email: data.email,
+              role: data.role,
+              timezone: data.timezone,
+              requiresCheckins: data.requires_checkins,
+            }
+          : null,
+      );
       setReady(true);
     };
 

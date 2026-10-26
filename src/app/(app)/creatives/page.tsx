@@ -64,7 +64,7 @@ export default function CreativesPage() {
               ))}
             </div>
 
-            {user && canAccess(user.role, "ads") && (
+            {user && canAccess(user, "ads") && (
               <>
                 <h3 className="font-medium mt-5 mb-2">Running in ads</h3>
                 {ADS.filter((a) => a.creativeId === selected.id).map((a) => (

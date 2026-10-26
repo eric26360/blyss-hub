@@ -17,7 +17,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!user) return null;
 
-  const visible = PAGES.filter((p) => canAccess(user.role, p.key));
+  const visible = PAGES.filter((p) => canAccess(user, p.key));
 
   return (
     <div className="min-h-screen md:flex">
@@ -27,7 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
         <nav className="flex md:flex-col gap-1 overflow-x-auto flex-1">
           {visible.map((p) => {
-            const active = p.href === "/" ? pathname === "/" : pathname.startsWith(p.href);
+            const active = pathname === p.href || (p.href !== "/" && pathname.startsWith(p.href + "/"));
             return (
               <Link
                 key={p.key}

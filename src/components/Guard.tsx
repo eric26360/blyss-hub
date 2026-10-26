@@ -7,7 +7,7 @@ import { useSession } from "@/lib/session";
 export function Guard({ page, children }: { page: PageKey; children: React.ReactNode }) {
   const { user } = useSession();
   if (!user) return null;
-  if (!canAccess(user.role, page)) {
+  if (!canAccess(user, page)) {
     return (
       <div className="rounded-2xl border border-stone-200 bg-white p-10 text-center">
         <p className="text-lg font-medium">No access</p>
