@@ -19,6 +19,12 @@ export const STATUS_COLORS: Record<string, string> = {
   Pending: "bg-yellow-50 text-yellow-700",
   "Day Off": "bg-sky-100 text-sky-700",
   "Non-working day": "bg-stone-100 text-stone-500",
+  Committed: "bg-amber-100 text-amber-700",
+  Paid: "bg-stone-800 text-white",
+  Cancelled: "bg-stone-100 text-stone-400",
+  "Awaiting Approval": "bg-rose-100 text-rose-700",
+  Approved: "bg-emerald-100 text-emerald-700",
+  Rejected: "bg-rose-100 text-rose-700",
 };
 
 export function Badge({ label }: { label: string }) {

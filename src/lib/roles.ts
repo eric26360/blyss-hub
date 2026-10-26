@@ -7,6 +7,9 @@ export type PageKey =
   | "overview"
   | "checkin"
   | "team_checkins"
+  | "creators"
+  | "top_creators"
+  | "budgets"
   | "creatives"
   | "ads"
   | "tasks"
@@ -17,6 +20,9 @@ export const PAGES: { key: PageKey; label: string; href: string }[] = [
   { key: "overview", label: "Overview", href: "/" },
   { key: "checkin", label: "Check-In", href: "/checkin" },
   { key: "team_checkins", label: "Team Check-Ins", href: "/team-checkins" },
+  { key: "creators", label: "UGC Creators", href: "/creators" },
+  { key: "top_creators", label: "Top UGC Creators", href: "/top-creators" },
+  { key: "budgets", label: "UGC Budgets", href: "/budgets" },
   { key: "creatives", label: "Creatives", href: "/creatives" },
   { key: "ads", label: "Ads", href: "/ads" },
   { key: "tasks", label: "Tasks", href: "/tasks" },
@@ -34,9 +40,9 @@ export const ROLE_LABELS: Record<Role, string> = {
 // "checkin" isn't listed here: it depends on the person's requires_checkins
 // setting rather than their role (see canAccess).
 export const ROLE_ACCESS: Record<Role, PageKey[]> = {
-  owner: ["overview", "team_checkins", "creatives", "ads", "tasks", "analyze", "team"],
-  strategist: ["overview", "creatives", "ads", "tasks", "analyze"],
-  ugc_manager: ["overview", "creatives", "tasks"],
+  owner: ["overview", "team_checkins", "creators", "top_creators", "budgets", "creatives", "ads", "tasks", "analyze", "team"],
+  strategist: ["overview", "creators", "top_creators", "budgets", "creatives", "ads", "tasks", "analyze"],
+  ugc_manager: ["overview", "creators", "top_creators", "budgets", "creatives", "tasks"],
   video_editor: ["overview", "creatives", "tasks", "analyze"],
 };
 
