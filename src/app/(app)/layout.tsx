@@ -40,13 +40,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+          <Link
+            href="/account"
+            className="md:hidden whitespace-nowrap rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100"
+          >
+            My account
+          </Link>
         </nav>
         <div className="hidden md:block border-t border-stone-200 pt-4 px-2">
           <p className="text-sm font-medium">{user.name}</p>
           <p className="text-xs text-stone-500">{ROLE_LABELS[user.role]}</p>
-          <button onClick={signOut} className="mt-2 text-xs text-brand hover:underline">
-            Sign out
-          </button>
+          <div className="mt-2 flex gap-3">
+            <Link href="/account" className="text-xs text-brand hover:underline">
+              My account
+            </Link>
+            <button onClick={signOut} className="text-xs text-brand hover:underline">
+              Sign out
+            </button>
+          </div>
         </div>
       </aside>
       <main className="flex-1 p-4 md:p-8 max-w-6xl">{children}</main>
