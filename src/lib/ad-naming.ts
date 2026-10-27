@@ -37,10 +37,20 @@ const OLD_NAMING_FIELDS = ["creator", "product", "offer", "type", "format", "ang
 const CONCEPT = /^C(\d+)(?:-(\d+))?$/i;
 
 export function parseAdName(name: string, separator = "_"): ParsedAdName {
-  const parts = name.trim().split(separator).map((p) => p.trim());
+  let parts = name.trim().split(separator).map((p) => p.trim());
   const concept = parts[0]?.match(CONCEPT);
 
   if (concept) {
+    // Creator handles can contain the separator (e.g. summerlynn_1). Every other
+    // slot is fixed, so the creator is whatever sits between the 8 slots before
+    // it and the 5 after it.
+    const creatorIndex = NEW_NAMING_FIELDS.indexOf("creator");
+    const after = NEW_NAMING_FIELDS.length - creatorIndex - 1;
+    if (parts.length > NEW_NAMING_FIELDS.length) {
+      const creator = parts.slice(creatorIndex, parts.length - after).join(separator);
+      parts = [...parts.slice(0, creatorIndex), creator, ...parts.slice(parts.length - after)];
+    }
+
     const out: ParsedAdName = { convention: "new", concept: Number(concept[1]) };
     if (concept[2]) out.iteration = Number(concept[2]);
     NEW_NAMING_FIELDS.forEach((field, i) => {
