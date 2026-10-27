@@ -9,6 +9,7 @@ export type PageKey =
   | "team_checkins"
   | "weekly_plan"
   | "team_weekly_plans"
+  | "owner_calendar"
   | "creators"
   | "top_creators"
   | "budgets"
@@ -22,6 +23,7 @@ export const PAGES: { key: PageKey; label: string; href: string }[] = [
   { key: "team_checkins", label: "Team Check-Ins", href: "/team-checkins" },
   { key: "weekly_plan", label: "Weekly Plan", href: "/weekly-plan" },
   { key: "team_weekly_plans", label: "Team Weekly Plans", href: "/team-weekly-plans" },
+  { key: "owner_calendar", label: "Owner Calendar", href: "/owner-calendar" },
   { key: "top_creatives", label: "Top Creatives", href: "/top-creatives" },
   { key: "tasks", label: "Tasks", href: "/tasks" },
   { key: "creators", label: "UGC Creators", href: "/creators" },
@@ -40,7 +42,7 @@ export const ROLE_LABELS: Record<Role, string> = {
 // "checkin" and "weekly_plan" aren't listed here: they depend on the person's
 // requires_checkins / requires_weekly_plan settings rather than their role (see canAccess).
 export const ROLE_ACCESS: Record<Role, PageKey[]> = {
-  owner: ["overview", "team_checkins", "team_weekly_plans", "top_creatives", "tasks", "creators", "top_creators", "budgets", "team"],
+  owner: ["overview", "team_checkins", "team_weekly_plans", "owner_calendar", "top_creatives", "tasks", "creators", "top_creators", "budgets", "team"],
   strategist: ["overview", "top_creatives", "tasks", "creators", "top_creators", "budgets"],
   ugc_manager: ["overview", "tasks", "creators", "top_creators", "budgets"],
   video_editor: ["overview", "tasks"],
