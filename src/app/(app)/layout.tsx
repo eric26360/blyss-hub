@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { NotificationBell } from "@/components/NotificationBell";
 import { PAGES, ROLE_LABELS, canAccess } from "@/lib/roles";
 import { useSession } from "@/lib/session";
 
@@ -22,8 +23,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen md:flex">
       <aside className="md:w-60 md:min-h-screen border-b md:border-b-0 md:border-r border-stone-200 bg-white p-4 flex md:flex-col gap-4">
-        <div className="text-xl font-semibold px-2">
-          Blyss <span className="text-brand">Hub</span>
+        <div className="flex items-center justify-between gap-2 px-2">
+          <span className="text-xl font-semibold whitespace-nowrap">
+            Blyss <span className="text-brand">Hub</span>
+          </span>
+          <NotificationBell />
         </div>
         <nav className="flex md:flex-col gap-1 overflow-x-auto flex-1">
           {visible.map((p) => {

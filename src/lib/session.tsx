@@ -14,6 +14,7 @@ export type User = {
   role: Role;
   timezone: string;
   requiresCheckins: boolean;
+  requiresWeeklyPlan: boolean;
 };
 
 type Session = {
@@ -39,7 +40,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       }
       const { data } = await supabase
         .from("profiles")
-        .select("id, full_name, email, role, active, timezone, requires_checkins")
+        // "*" so sign-in keeps working before newer columns exist in the database.
+        .select("*")
         .eq("id", userId)
         .single();
       setUser(
@@ -51,6 +53,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
               role: data.role,
               timezone: data.timezone,
               requiresCheckins: data.requires_checkins,
+              requiresWeeklyPlan: data.requires_weekly_plan ?? false,
             }
           : null,
       );

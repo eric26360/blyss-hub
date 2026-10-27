@@ -208,3 +208,9 @@ Ads are attributed to strategists, creators, angles, etc. by reading the ad name
 - Old convention (no strategist field): `Blyss_Product_Offer_Type_Format_Angle_USP_Scent_Agency_Destination`. Old ads can't be credited to a strategist from the name alone.
 - Separator assumed to be `_` — **to confirm with a real ad name.**
 - Sheet also tracks Winner / Loser / Testing per Creative ID (META ADS tab, ~3,900 rows) — candidate for a one-time import.
+
+---
+
+## Weekly plans (Eric, 2026-10-27)
+
+Before each week starts, every creative strategist writes: what they'll complete that week, what they'll focus on, and a plan for Monday–Friday. Editable all week (each edit keeps the previous version); locked once the week ends. On time = written before Monday 00:00 in their timezone. Owners get a notification on Monday at 6 PM New York time listing who hasn't written theirs (Supabase pg_cron, once per week). Owners can switch the requirement on/off per person (`profiles.requires_weekly_plan`).
