@@ -1,8 +1,6 @@
 export const money = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
-export const roas = (revenue: number, spend: number) => (spend ? revenue / spend : 0);
-
 export const STATUS_COLORS: Record<string, string> = {
   Live: "bg-emerald-100 text-emerald-700",
   Active: "bg-emerald-100 text-emerald-700",

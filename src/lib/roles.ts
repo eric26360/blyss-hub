@@ -12,10 +12,8 @@ export type PageKey =
   | "creators"
   | "top_creators"
   | "budgets"
-  | "creatives"
-  | "ads"
+  | "top_creatives"
   | "tasks"
-  | "analyze"
   | "team";
 
 export const PAGES: { key: PageKey; label: string; href: string }[] = [
@@ -24,13 +22,11 @@ export const PAGES: { key: PageKey; label: string; href: string }[] = [
   { key: "team_checkins", label: "Team Check-Ins", href: "/team-checkins" },
   { key: "weekly_plan", label: "Weekly Plan", href: "/weekly-plan" },
   { key: "team_weekly_plans", label: "Team Weekly Plans", href: "/team-weekly-plans" },
+  { key: "top_creatives", label: "Top Creatives", href: "/top-creatives" },
+  { key: "tasks", label: "Tasks", href: "/tasks" },
   { key: "creators", label: "UGC Creators", href: "/creators" },
   { key: "top_creators", label: "Top UGC Creators", href: "/top-creators" },
   { key: "budgets", label: "UGC Budgets", href: "/budgets" },
-  { key: "creatives", label: "Creatives", href: "/creatives" },
-  { key: "ads", label: "Ads", href: "/ads" },
-  { key: "tasks", label: "Tasks", href: "/tasks" },
-  { key: "analyze", label: "Video Analysis", href: "/analyze" },
   { key: "team", label: "Team & Access", href: "/team" },
 ];
 
@@ -44,10 +40,10 @@ export const ROLE_LABELS: Record<Role, string> = {
 // "checkin" and "weekly_plan" aren't listed here: they depend on the person's
 // requires_checkins / requires_weekly_plan settings rather than their role (see canAccess).
 export const ROLE_ACCESS: Record<Role, PageKey[]> = {
-  owner: ["overview", "team_checkins", "team_weekly_plans", "creators", "top_creators", "budgets", "creatives", "ads", "tasks", "analyze", "team"],
-  strategist: ["overview", "creators", "top_creators", "budgets", "creatives", "ads", "tasks", "analyze"],
-  ugc_manager: ["overview", "creators", "top_creators", "budgets", "creatives", "tasks"],
-  video_editor: ["overview", "creatives", "tasks", "analyze"],
+  owner: ["overview", "team_checkins", "team_weekly_plans", "top_creatives", "tasks", "creators", "top_creators", "budgets", "team"],
+  strategist: ["overview", "top_creatives", "tasks", "creators", "top_creators", "budgets"],
+  ugc_manager: ["overview", "tasks", "creators", "top_creators", "budgets"],
+  video_editor: ["overview", "tasks"],
 };
 
 export function canAccess(user: { role: Role; requiresCheckins: boolean; requiresWeeklyPlan?: boolean }, page: PageKey) {
