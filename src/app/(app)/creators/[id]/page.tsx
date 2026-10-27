@@ -378,19 +378,23 @@ function NotesCard({
   onSaved: () => void;
 }) {
   const [body, setBody] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!body.trim()) return;
-    await supabase.from("creator_notes").insert({ creator_id: creatorId, body: body.trim() });
+    setError(null);
+    const { error } = await supabase.from("creator_notes").insert({ creator_id: creatorId, body: body.trim() });
+    if (error) return setError(error.message);
     setBody("");
     onSaved();
   };
 
   const remove = async (id: string) => {
     if (!window.confirm("Delete this note?")) return;
-    await supabase.from("creator_notes").delete().eq("id", id);
+    const { error } = await supabase.from("creator_notes").delete().eq("id", id);
+    if (error) setError(error.message);
     onSaved();
   };
 
@@ -406,6 +410,7 @@ function NotesCard({
         />
         <button type="submit" className="rounded-xl bg-stone-900 text-white px-3 py-2 text-sm">Add</button>
       </form>
+      {error && <p className="text-sm text-rose-600 mb-3">{error}</p>}
       {notes.length === 0 && <p className="text-sm text-stone-500">No notes yet.</p>}
       <ul className="space-y-3">
         {notes.map((n) => (
