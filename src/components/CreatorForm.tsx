@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useSession } from "@/lib/session";
 import { CREATOR_STATUSES, CREATOR_STATUS_LABEL, type Creator } from "@/lib/ugc";
+import type { DirectoryCreator } from "@/lib/use-creator-performance";
 import type { TeamMember } from "@/lib/use-team";
 
 type Field = { key: keyof Creator; label: string; type?: "text" | "email" | "url" | "money" | "textarea"; placeholder?: string };
@@ -41,7 +42,7 @@ const SECTIONS: { title: string; fields: Field[] }[] = [
   },
 ];
 
-const MONEY = new Set<keyof Creator>(["standard_rate", "negotiated_rate", "package_rate", "whitelisting_rate"]);
+const MONEY = new Set<keyof DirectoryCreator>(["standard_rate", "negotiated_rate", "package_rate", "whitelisting_rate"]);
 
 // Add or edit a creator. Strategists can only assign creators to themselves (enforced by the database).
 export function CreatorForm({
@@ -50,20 +51,20 @@ export function CreatorForm({
   onSaved,
   onCancel,
 }: {
-  creator?: Creator;
+  creator?: DirectoryCreator;
   team: TeamMember[];
   onSaved: (id: string) => void;
   onCancel: () => void;
 }) {
   const { user } = useSession();
   const isStrategist = user?.role === "strategist";
-  const [values, setValues] = useState<Partial<Creator>>(
+  const [values, setValues] = useState<Partial<DirectoryCreator>>(
     creator ?? { status: "prospect", assigned_strategist_id: isStrategist ? user?.id : null },
   );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const set = (key: keyof Creator, v: string) =>
+  const set = (key: keyof DirectoryCreator, v: string) =>
     setValues((prev) => ({ ...prev, [key]: v === "" ? null : MONEY.has(key) ? Number(v) : v }));
 
   const save = async (e: React.FormEvent) => {
@@ -169,6 +170,33 @@ export function CreatorForm({
           />
         </label>
       </div>
+
+      {/* Trybe fields exist once 0007 has been run; only shown when editing a creator that has them. */}
+      {"is_trybe" in values && (
+        <div>
+          <h3 className="font-medium mb-3">Trybe</h3>
+          <label className="flex items-center gap-2 text-sm mb-3">
+            <input
+              type="checkbox"
+              checked={!!values.is_trybe}
+              onChange={(e) => setValues((prev) => ({ ...prev, is_trybe: e.target.checked }))}
+            />
+            Part of our Trybe creator community
+          </label>
+          {values.is_trybe && (
+            <div className="grid sm:grid-cols-3 gap-3">
+              <label className="block">
+                <span className="block text-sm text-stone-600 mb-1">Joined Trybe</span>
+                <input type="date" value={values.trybe_joined_on ?? ""} onChange={(e) => set("trybe_joined_on", e.target.value)} className={input} />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="block text-sm text-stone-600 mb-1">Trybe notes</span>
+                <input value={values.trybe_notes ?? ""} onChange={(e) => set("trybe_notes", e.target.value)} className={input} />
+              </label>
+            </div>
+          )}
+        </div>
+      )}
 
       {error && <p className="text-sm text-rose-600">{error}</p>}
       <div className="flex gap-2">

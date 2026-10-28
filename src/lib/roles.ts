@@ -10,14 +10,21 @@ export type PageKey =
   | "weekly_plan"
   | "team_weekly_plans"
   | "owner_calendar"
+  | "ugc_performance"
+  | "ugc_seeding"
+  | "ugc_leaderboard"
+  | "ugc_trybe"
   | "creators"
-  | "top_creators"
   | "budgets"
   | "top_creatives"
   | "tasks"
   | "team";
 
-export const PAGES: { key: PageKey; label: string; href: string }[] = [
+export type NavGroup = "ugc";
+
+export const NAV_GROUPS: Record<NavGroup, string> = { ugc: "UGC" };
+
+export const PAGES: { key: PageKey; label: string; href: string; group?: NavGroup }[] = [
   { key: "overview", label: "Overview", href: "/" },
   { key: "checkin", label: "Check-In", href: "/checkin" },
   { key: "team_checkins", label: "Team Check-Ins", href: "/team-checkins" },
@@ -26,9 +33,12 @@ export const PAGES: { key: PageKey; label: string; href: string }[] = [
   { key: "owner_calendar", label: "Owner Calendar", href: "/owner-calendar" },
   { key: "top_creatives", label: "Top Creatives", href: "/top-creatives" },
   { key: "tasks", label: "Tasks", href: "/tasks" },
-  { key: "creators", label: "UGC Creators", href: "/creators" },
-  { key: "top_creators", label: "Top UGC Creators", href: "/top-creators" },
-  { key: "budgets", label: "UGC Budgets", href: "/budgets" },
+  { key: "ugc_performance", label: "Creator Performance", href: "/ugc", group: "ugc" },
+  { key: "ugc_seeding", label: "Product Seeding", href: "/ugc/seeding", group: "ugc" },
+  { key: "ugc_leaderboard", label: "Creator Leaderboard", href: "/ugc/leaderboard", group: "ugc" },
+  { key: "ugc_trybe", label: "Trybe Creators", href: "/ugc/trybe", group: "ugc" },
+  { key: "creators", label: "Creator Directory", href: "/creators", group: "ugc" },
+  { key: "budgets", label: "UGC Budgets", href: "/budgets", group: "ugc" },
   { key: "team", label: "Team & Access", href: "/team" },
 ];
 
@@ -42,9 +52,9 @@ export const ROLE_LABELS: Record<Role, string> = {
 // "checkin" and "weekly_plan" aren't listed here: they depend on the person's
 // requires_checkins / requires_weekly_plan settings rather than their role (see canAccess).
 export const ROLE_ACCESS: Record<Role, PageKey[]> = {
-  owner: ["overview", "team_checkins", "team_weekly_plans", "owner_calendar", "top_creatives", "tasks", "creators", "top_creators", "budgets", "team"],
-  strategist: ["overview", "top_creatives", "tasks", "creators", "top_creators", "budgets"],
-  ugc_manager: ["overview", "tasks", "creators", "top_creators", "budgets"],
+  owner: ["overview", "team_checkins", "team_weekly_plans", "owner_calendar", "top_creatives", "tasks", "ugc_performance", "ugc_seeding", "ugc_leaderboard", "ugc_trybe", "creators", "budgets", "team"],
+  strategist: ["overview", "top_creatives", "tasks", "ugc_performance", "ugc_seeding", "ugc_leaderboard", "ugc_trybe", "creators", "budgets"],
+  ugc_manager: ["overview", "tasks", "ugc_performance", "ugc_seeding", "ugc_leaderboard", "ugc_trybe", "creators", "budgets"],
   video_editor: ["overview", "tasks"],
 };
 

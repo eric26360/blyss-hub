@@ -488,7 +488,7 @@ function ExpenseForm({
             <option key={c.id} value={c.id}>{c.full_name}</option>
           ))}
         </select>
-        {creators.length === 0 && <span className="text-xs text-stone-500">Add the creator on the UGC Creators page first.</span>}
+        {creators.length === 0 && <span className="text-xs text-stone-500">Add the creator in the Creator Directory first.</span>}
       </label>
       <label className="block">
         <span className={label}>Whose budget (strategist)</span>

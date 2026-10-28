@@ -14,9 +14,9 @@ import {
   CREATOR_STATUS_LABEL,
   money2,
   socialUrl,
-  type Creator,
   type CreatorStats,
 } from "@/lib/ugc";
+import type { DirectoryCreator } from "@/lib/use-creator-performance";
 import { useTeam } from "@/lib/use-team";
 
 export default function CreatorsPage() {
@@ -24,7 +24,7 @@ export default function CreatorsPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const { team, nameOf } = useTeam();
-  const [creators, setCreators] = useState<Creator[]>([]);
+  const [creators, setCreators] = useState<DirectoryCreator[]>([]);
   const [stats, setStats] = useState<Record<string, CreatorStats>>({});
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loaded, setLoaded] = useState(false);
@@ -34,6 +34,8 @@ export default function CreatorsPage() {
   const [status, setStatus] = useState("");
   const [strategist, setStrategist] = useState("");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [onlyTrybe, setOnlyTrybe] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const [c, s, f] = await Promise.all([
@@ -41,7 +43,7 @@ export default function CreatorsPage() {
       supabase.from("creator_stats").select("*"),
       supabase.from("creator_favorites").select("creator_id"),
     ]);
-    setCreators((c.data as Creator[]) ?? []);
+    setCreators((c.data as DirectoryCreator[]) ?? []);
     setStats(Object.fromEntries(((s.data as CreatorStats[]) ?? []).map((x) => [x.creator_id, x])));
     setFavorites(new Set((f.data ?? []).map((x) => x.creator_id)));
     setLoaded(true);
@@ -70,8 +72,22 @@ export default function CreatorsPage() {
       (!q || [c.full_name, c.email, c.instagram, c.tiktok, c.country, c.location].some((v) => v?.toLowerCase().includes(q))) &&
       (!status || c.status === status) &&
       (!strategist || (strategist === "none" ? !c.assigned_strategist_id : c.assigned_strategist_id === strategist)) &&
-      (!onlyFavorites || favorites.has(c.id)),
+      (!onlyFavorites || favorites.has(c.id)) &&
+      (!onlyTrybe || c.is_trybe),
   );
+
+  // Trybe fields exist once 0007 has been run.
+  const trybeReady = creators.length > 0 && "is_trybe" in creators[0];
+  // Strategists can only change creators assigned to them (the database enforces this too).
+  const canChange = (c: DirectoryCreator) =>
+    user?.role === "owner" || user?.role === "ugc_manager" || (user?.role === "strategist" && c.assigned_strategist_id === user.id);
+
+  const toggleTrybe = async (c: DirectoryCreator) => {
+    setError(null);
+    const { error } = await supabase.from("ugc_creators").update({ is_trybe: !c.is_trybe }).eq("id", c.id);
+    if (error) return setError(error.message);
+    load();
+  };
 
   const strategists = team.filter((t) => t.role === "strategist");
   const select = "rounded-xl border border-stone-300 px-3 py-2 text-sm bg-white";
@@ -79,7 +95,7 @@ export default function CreatorsPage() {
   return (
     <Guard page="creators">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-        <PageHeader title="UGC Creators" subtitle="Every creator Blyss has worked with or is talking to." />
+        <PageHeader title="Creator Directory" subtitle="Every creator Blyss has worked with or is talking to." />
         <button onClick={() => setAdding(true)} className="rounded-xl bg-brand text-white px-4 py-2 text-sm font-medium shrink-0 mb-6">
           + Add creator
         </button>
@@ -110,7 +126,14 @@ export default function CreatorsPage() {
           <input type="checkbox" checked={onlyFavorites} onChange={(e) => setOnlyFavorites(e.target.checked)} />
           My favorites
         </label>
+        {trybeReady && (
+          <label className="flex items-center gap-2 text-sm px-2">
+            <input type="checkbox" checked={onlyTrybe} onChange={(e) => setOnlyTrybe(e.target.checked)} />
+            Trybe only
+          </label>
+        )}
       </Card>
+      {error && <p className="text-sm text-rose-600 mb-3">{error}</p>}
 
       <Card className="!p-0 overflow-x-auto">
         <table className="w-full text-sm">
@@ -126,6 +149,7 @@ export default function CreatorsPage() {
               <th className="p-3 text-right">Videos</th>
               <th className="p-3 text-right">Total paid</th>
               <th className="p-3">Rating</th>
+              {trybeReady && <th className="p-3">Trybe</th>}
             </tr>
           </thead>
           <tbody>
@@ -147,8 +171,11 @@ export default function CreatorsPage() {
                       <Avatar creator={c} />
                       <span className="whitespace-nowrap">{c.full_name}</span>
                     </Link>
-                    {(c.country || c.location) && (
-                      <p className="text-xs text-stone-500 ml-10">{[c.location, c.country].filter(Boolean).join(", ")}</p>
+                    {(c.country || c.location || c.is_top) && (
+                      <p className="text-xs text-stone-500 ml-10">
+                        {[c.location, c.country].filter(Boolean).join(", ")}
+                        {c.is_top && <span className="ml-1 text-amber-600">⭐ Top</span>}
+                      </p>
                     )}
                   </td>
                   <td className="p-3"><StatusBadge status={c.status} /></td>
@@ -164,6 +191,20 @@ export default function CreatorsPage() {
                   <td className="p-3 whitespace-nowrap">
                     {s?.avg_rating ? <><Stars value={s.avg_rating} /> <span className="text-xs text-stone-500">{s.avg_rating}</span></> : "—"}
                   </td>
+                  {trybeReady && (
+                    <td className="p-3 whitespace-nowrap">
+                      {canChange(c) ? (
+                        <button
+                          onClick={() => toggleTrybe(c)}
+                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${c.is_trybe ? "bg-violet-100 text-violet-700" : "border border-stone-300 text-stone-500 hover:border-violet-300 hover:text-violet-700"}`}
+                        >
+                          {c.is_trybe ? "Trybe ✓" : "+ Trybe"}
+                        </button>
+                      ) : c.is_trybe ? (
+                        <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-violet-100 text-violet-700">Trybe</span>
+                      ) : null}
+                    </td>
+                  )}
                 </tr>
               );
             })}

@@ -214,3 +214,15 @@ Ads are attributed to strategists, creators, angles, etc. by reading the ad name
 ## Weekly plans (Eric, 2026-10-27)
 
 Before each week starts, every creative strategist writes: what they'll complete that week, what they'll focus on, and a plan for Monday–Friday. Editable all week (each edit keeps the previous version); locked once the week ends. On time = written before Monday 00:00 in their timezone. Owners get a notification on Monday at 6 PM New York time listing who hasn't written theirs (Supabase pg_cron, once per week). Owners can switch the requirement on/off per person (`profiles.requires_weekly_plan`).
+
+---
+
+## UGC section (added 2026-10-28)
+
+Sidebar group **UGC**: Creator Performance (`/ugc`), Product Seeding (`/ugc/seeding`), Creator Leaderboard (`/ugc/leaderboard`, replaces Top UGC Creators — `/top-creators` redirects), Trybe Creators (`/ugc/trybe`), Creator Directory (`/creators`), UGC Budgets (`/budgets`).
+
+- **Creator Performance:** per-creator rollup of ads (creator read from the ad name), **Whitelisted** table on top, **Paid** below; click a creator for their individual ads. Hook rate is shown only if the data source provides it.
+- **Whitelisted vs paid:** not in the naming convention. The data source gives a default; owners/UGC managers override per ad (`ad_classifications`). *Open question: should the naming convention get a slot for it, or does Northbeam/Meta expose it?*
+- **Product Seeding:** `seeding_sends` (product, cost, status Shipped/Delivered/Posted/No Post, post link, views/engagement, discount code orders/revenue).
+- **Leaderboard:** ranked by a chosen metric (spend, winners, ROAS, CPA, NC %, seeding views / code revenue), whitelisted/paid filter, ⭐ Top filter.
+- **Trybe:** `ugc_creators.is_trybe` (+ joined date, notes).

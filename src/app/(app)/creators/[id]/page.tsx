@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Avatar, StatusBadge } from "@/components/CreatorBits";
+import { CreatorAdsCard } from "@/components/CreatorAdsCard";
 import { CreatorForm, Dialog } from "@/components/CreatorForm";
 import { Card, Guard } from "@/components/Guard";
 import { Stars } from "@/components/Stars";
@@ -16,12 +17,12 @@ import {
   RATING_CRITERIA,
   money2,
   socialUrl,
-  type Creator,
   type CreatorStats,
   type Expense,
   type Rating,
   type RatingKey,
 } from "@/lib/ugc";
+import type { DirectoryCreator } from "@/lib/use-creator-performance";
 import { useTeam } from "@/lib/use-team";
 
 type RateRow = {
@@ -43,7 +44,7 @@ export default function CreatorProfilePage() {
   const supabase = useMemo(() => createClient(), []);
   const { team, nameOf } = useTeam();
 
-  const [creator, setCreator] = useState<Creator | null>(null);
+  const [creator, setCreator] = useState<DirectoryCreator | null>(null);
   const [stats, setStats] = useState<CreatorStats | null>(null);
   const [rates, setRates] = useState<RateRow[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -63,7 +64,7 @@ export default function CreatorProfilePage() {
       supabase.from("creator_notes").select("*").eq("creator_id", id).order("created_at", { ascending: false }),
       supabase.from("creator_favorites").select("creator_id").eq("creator_id", id),
     ]);
-    setCreator(c.data as Creator | null);
+    setCreator(c.data as DirectoryCreator | null);
     setStats(s.data as CreatorStats | null);
     setRates((r.data as RateRow[]) ?? []);
     setExpenses((e.data as Expense[]) ?? []);
@@ -98,9 +99,18 @@ export default function CreatorProfilePage() {
     load();
   };
 
+  // Trybe fields exist once 0007 has been run.
+  const trybeReady = !!creator && "is_trybe" in creator;
+  const toggleTrybe = async () => {
+    if (!creator) return;
+    const { error } = await supabase.from("ugc_creators").update({ is_trybe: !creator.is_trybe }).eq("id", id);
+    if (error) window.alert(error.message);
+    load();
+  };
+
   return (
     <Guard page="creators">
-      <Link href="/creators" className="text-sm text-brand hover:underline">← All creators</Link>
+      <Link href="/creators" className="text-sm text-brand hover:underline">← Creator Directory</Link>
       {loaded && !creator && <Card className="mt-4 text-center text-stone-500">Creator not found.</Card>}
       {creator && (
         <>
@@ -111,6 +121,11 @@ export default function CreatorProfilePage() {
                 <h1 className="text-2xl font-semibold">{creator.full_name}</h1>
                 <StatusBadge status={creator.status} />
                 {creator.is_top && <span className="text-xs rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 font-medium">★ Top creator</span>}
+                {creator.is_trybe && (
+                  <span className="text-xs rounded-full bg-violet-100 text-violet-700 px-2 py-0.5 font-medium">
+                    Trybe{creator.trybe_joined_on ? ` since ${fmtDate(creator.trybe_joined_on + "T12:00:00")}` : ""}
+                  </span>
+                )}
               </div>
               <p className="text-sm text-stone-500 mt-1">
                 {[creator.location, creator.country].filter(Boolean).join(", ") || "Location not set"} · Strategist: {nameOf(creator.assigned_strategist_id)} · UGC manager: {nameOf(creator.assigned_ugc_manager_id)}
@@ -123,6 +138,11 @@ export default function CreatorProfilePage() {
               {curator && (
                 <button onClick={toggleTop} className="rounded-xl border border-stone-300 px-3 py-2 text-sm">
                   {creator.is_top ? "Remove from Top list" : "Add to Top list"}
+                </button>
+              )}
+              {trybeReady && canEdit && (
+                <button onClick={toggleTrybe} className="rounded-xl border border-stone-300 px-3 py-2 text-sm">
+                  {creator.is_trybe ? "Remove from Trybe" : "Add to Trybe"}
                 </button>
               )}
               {canEdit && (
@@ -233,12 +253,8 @@ export default function CreatorProfilePage() {
             </Card>
           </div>
 
-          <Card className="mb-4">
-            <h2 className="font-medium mb-1">Ad performance</h2>
-            <p className="text-sm text-stone-500">
-              Ads using this creator&apos;s content, with spend, CAC and winners, will appear here once Northbeam is connected.
-            </p>
-          </Card>
+          <h2 className="text-lg font-semibold mb-2">Ad performance</h2>
+          <CreatorAdsCard creator={creator} />
 
           {editing && (
             <Dialog title={`Edit ${creator.full_name}`} onClose={() => setEditing(false)}>

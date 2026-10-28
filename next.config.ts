@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    // Top UGC Creators became the Creator Leaderboard inside the UGC section.
+    return [{ source: "/top-creators", destination: "/ugc/leaderboard", permanent: false }];
+  },
 };
 
 export default nextConfig;
