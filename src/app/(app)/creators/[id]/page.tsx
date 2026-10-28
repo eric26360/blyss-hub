@@ -6,8 +6,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Avatar, StatusBadge } from "@/components/CreatorBits";
 import { CreatorAdsCard } from "@/components/CreatorAdsCard";
 import { CreatorForm, Dialog } from "@/components/CreatorForm";
+import { CreatorTagsCard, TagChips } from "@/components/CreatorTags";
 import { Card, Guard } from "@/components/Guard";
 import { Stars } from "@/components/Stars";
+import { useCreatorTags } from "@/lib/creator-tags";
 import { Badge } from "@/lib/format";
 import { useSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/client";
@@ -43,6 +45,7 @@ export default function CreatorProfilePage() {
   const { user } = useSession();
   const supabase = useMemo(() => createClient(), []);
   const { team, nameOf } = useTeam();
+  const ct = useCreatorTags();
 
   const [creator, setCreator] = useState<DirectoryCreator | null>(null);
   const [stats, setStats] = useState<CreatorStats | null>(null);
@@ -127,6 +130,7 @@ export default function CreatorProfilePage() {
                   </span>
                 )}
               </div>
+              <TagChips tags={ct.tagsOf(creator.id)} ct={ct} className="mt-1.5" />
               <p className="text-sm text-stone-500 mt-1">
                 {[creator.location, creator.country].filter(Boolean).join(", ") || "Location not set"} · Strategist: {nameOf(creator.assigned_strategist_id)} · UGC manager: {nameOf(creator.assigned_ugc_manager_id)}
               </p>
@@ -195,6 +199,8 @@ export default function CreatorProfilePage() {
             </Card>
             <RatingsCard creatorId={id} ratings={ratings} myId={user.id} nameOf={nameOf} onSaved={load} />
           </div>
+
+          <CreatorTagsCard ct={ct} creatorId={creator.id} canEdit={canEdit} />
 
           <Card className="mb-4 !p-0 overflow-x-auto">
             <div className="p-5 pb-2">
@@ -265,6 +271,7 @@ export default function CreatorProfilePage() {
                 onSaved={() => {
                   setEditing(false);
                   load();
+                  ct.reload();
                 }}
               />
             </Dialog>

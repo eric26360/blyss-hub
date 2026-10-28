@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { DateRangeControls, useDateRange } from "@/components/DateRange";
 import { Avatar } from "@/components/CreatorBits";
+import { TagChips, TagFilters, TagsNotReady } from "@/components/CreatorTags";
 import { Card, Guard, PageHeader } from "@/components/Guard";
 import { DATA_IS_SAMPLE, type AdType } from "@/lib/creative-performance";
 import {
@@ -18,6 +19,7 @@ import {
   type SeedingRollup,
   type SeedingSend,
 } from "@/lib/creator-performance";
+import { hasTagFilter, matchesTagFilter, useCreatorTags, type TagFilter } from "@/lib/creator-tags";
 import { money } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import { useCreatorPerformance, type DirectoryCreator } from "@/lib/use-creator-performance";
@@ -59,6 +61,8 @@ export default function LeaderboardPage() {
   const [metric, setMetric] = useState<Metric>("spend");
   const [adType, setAdType] = useState<"all" | AdType>("all");
   const [topOnly, setTopOnly] = useState(false);
+  const ct = useCreatorTags();
+  const [tagFilter, setTagFilter] = useState<TagFilter>({});
   const [sends, setSends] = useState<SeedingSend[]>([]);
   const [seedingReady, setSeedingReady] = useState(true);
 
@@ -98,6 +102,7 @@ export default function LeaderboardPage() {
   const def = METRICS.find((m) => m.key === metric)!;
   const ranked = rows
     .filter((r) => !topOnly || r.creator?.is_top)
+    .filter((r) => !hasTagFilter(tagFilter) || (!!r.creator && matchesTagFilter(ct.byCreator.get(r.creator.id), tagFilter)))
     .sort((a, b) => {
       const av = metricValue(a, metric);
       const bv = metricValue(b, metric);
@@ -140,6 +145,9 @@ export default function LeaderboardPage() {
           </label>
         </div>
       </Card>
+      <div className="mb-4">
+        {ct.ready ? <TagFilters ct={ct} value={tagFilter} onChange={setTagFilter} /> : ct.loaded && <TagsNotReady />}
+      </div>
 
       <Card className="!p-0 overflow-x-auto">
         <table className="w-full text-sm">
@@ -179,6 +187,7 @@ export default function LeaderboardPage() {
                           {r.creator?.is_top && <span className="ml-1 rounded-full bg-amber-100 text-amber-800 px-1.5">⭐ Top</span>}
                           {r.creator?.is_trybe && <span className="ml-1 rounded-full bg-violet-100 text-violet-700 px-1.5">Trybe</span>}
                         </p>
+                        {r.creator && <TagChips tags={ct.tagsOf(r.creator.id)} ct={ct} className="mt-1" />}
                       </div>
                     </div>
                   </td>
@@ -196,7 +205,11 @@ export default function LeaderboardPage() {
             {ranked.length === 0 && (
               <tr>
                 <td colSpan={10} className="p-6 text-center text-stone-500">
-                  {topOnly ? "No ⭐ Top creators have ads or seeding in this period." : "No creator ads or seeding in this period."}
+                  {hasTagFilter(tagFilter)
+                    ? "No creators with these tags have ads or seeding in this period."
+                    : topOnly
+                      ? "No ⭐ Top creators have ads or seeding in this period."
+                      : "No creator ads or seeding in this period."}
                 </td>
               </tr>
             )}

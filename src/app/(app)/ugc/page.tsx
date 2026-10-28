@@ -1,11 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { CreatorPerformanceTable } from "@/components/CreatorPerformanceTable";
+import { TagFilters, TagsNotReady } from "@/components/CreatorTags";
 import { DateRangeControls, useDateRange } from "@/components/DateRange";
 import { Card, Guard, PageHeader } from "@/components/Guard";
+import { TagPerformanceCard } from "@/components/TagPerformance";
 import { DATA_IS_SAMPLE } from "@/lib/creative-performance";
-import { pct, ratio, rollupByCreator } from "@/lib/creator-performance";
+import { normalizeHandle, pct, ratio, rollupByCreator, type CreatorRollup } from "@/lib/creator-performance";
+import { hasTagFilter, matchesTagFilter, useCreatorTags, type TagFilter } from "@/lib/creator-tags";
 import { money } from "@/lib/format";
 import { useSession } from "@/lib/session";
 import { useCreatorPerformance } from "@/lib/use-creator-performance";
@@ -16,11 +19,21 @@ export default function CreatorPerformancePage() {
   const range = useDateRange("month");
   const { totals, winners, byHandle, classificationsReady, setAdType, error } = useCreatorPerformance(range.from, range.to, range.today);
 
-  const whitelisted = useMemo(() => rollupByCreator(totals.filter((t) => t.adType === "whitelisted"), winners), [totals, winners]);
-  const paid = useMemo(() => rollupByCreator(totals.filter((t) => t.adType === "paid"), winners), [totals, winners]);
+  const ct = useCreatorTags();
+  const [tagFilter, setTagFilter] = useState<TagFilter>({});
+  // With a tag filter on, only creators in the directory who have every chosen tag.
+  const keepHandle = (handle: string) => {
+    if (!hasTagFilter(tagFilter)) return true;
+    const c = byHandle.get(handle);
+    return !!c && matchesTagFilter(ct.byCreator.get(c.id), tagFilter);
+  };
+  const keep = (r: CreatorRollup) => keepHandle(r.handle);
+
+  const whitelisted = useMemo(() => rollupByCreator(totals.filter((t) => t.adType === "whitelisted"), winners), [totals, winners]).filter(keep);
+  const paid = useMemo(() => rollupByCreator(totals.filter((t) => t.adType === "paid"), winners), [totals, winners]).filter(keep);
 
   // Ads with a creator in the name only.
-  const creatorAds = totals.filter((t) => t.creator);
+  const creatorAds = totals.filter((t) => t.creator && keepHandle(normalizeHandle(t.creator)));
   const sum = (k: "spend" | "revenue" | "orders" | "newCustomerOrders" | "visits" | "newVisits") =>
     creatorAds.reduce((s, a) => s + a[k], 0);
   const spend = sum("spend");
@@ -48,8 +61,9 @@ export default function CreatorPerformancePage() {
         </div>
       )}
 
-      <Card className="mb-4">
+      <Card className="mb-4 space-y-3">
         <DateRangeControls range={range} />
+        {ct.ready ? <TagFilters ct={ct} value={tagFilter} onChange={setTagFilter} /> : ct.loaded && <TagsNotReady />}
       </Card>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -77,7 +91,8 @@ export default function CreatorPerformancePage() {
         winners={winners}
         canClassify={canClassify}
         onSetType={setAdType}
-        emptyText="No whitelisted creator ads spent in this period."
+        emptyText={hasTagFilter(tagFilter) ? "No whitelisted ads from creators with these tags in this period." : "No whitelisted creator ads spent in this period."}
+        tags={ct}
       />
       <CreatorPerformanceTable
         title="Paid"
@@ -87,8 +102,11 @@ export default function CreatorPerformancePage() {
         winners={winners}
         canClassify={canClassify}
         onSetType={setAdType}
-        emptyText="No paid creator ads spent in this period."
+        emptyText={hasTagFilter(tagFilter) ? "No paid ads from creators with these tags in this period." : "No paid creator ads spent in this period."}
+        tags={ct}
       />
+
+      <TagPerformanceCard ct={ct} totals={totals} byHandle={byHandle} winners={winners} />
 
       <p className="text-xs text-stone-500">
         Creators are read from the ad name. A creator links to their profile when their Instagram or TikTok handle in the Creator Directory matches.

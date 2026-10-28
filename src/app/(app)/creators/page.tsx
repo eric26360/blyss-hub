@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Avatar, StatusBadge } from "@/components/CreatorBits";
 import { CreatorForm, Dialog } from "@/components/CreatorForm";
+import { ManageTags, TagChips, TagFilters, TagsNotReady } from "@/components/CreatorTags";
 import { Card, Guard, PageHeader } from "@/components/Guard";
 import { Stars } from "@/components/Stars";
+import { matchesTagFilter, useCreatorTags, type TagFilter } from "@/lib/creator-tags";
 import { useSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -35,6 +37,8 @@ export default function CreatorsPage() {
   const [strategist, setStrategist] = useState("");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [onlyTrybe, setOnlyTrybe] = useState(false);
+  const [tagFilter, setTagFilter] = useState<TagFilter>({});
+  const ct = useCreatorTags();
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -73,7 +77,8 @@ export default function CreatorsPage() {
       (!status || c.status === status) &&
       (!strategist || (strategist === "none" ? !c.assigned_strategist_id : c.assigned_strategist_id === strategist)) &&
       (!onlyFavorites || favorites.has(c.id)) &&
-      (!onlyTrybe || c.is_trybe),
+      (!onlyTrybe || c.is_trybe) &&
+      matchesTagFilter(ct.byCreator.get(c.id), tagFilter),
   );
 
   // Trybe fields exist once 0007 has been run.
@@ -132,7 +137,11 @@ export default function CreatorsPage() {
             Trybe only
           </label>
         )}
+        <div className="w-full">
+          {ct.ready ? <TagFilters ct={ct} value={tagFilter} onChange={setTagFilter} /> : ct.loaded && <TagsNotReady />}
+        </div>
       </Card>
+      <ManageTags ct={ct} />
       {error && <p className="text-sm text-rose-600 mb-3">{error}</p>}
 
       <Card className="!p-0 overflow-x-auto">
@@ -177,6 +186,7 @@ export default function CreatorsPage() {
                         {c.is_top && <span className="ml-1 text-amber-600">⭐ Top</span>}
                       </p>
                     )}
+                    <TagChips tags={ct.tagsOf(c.id)} ct={ct} className="ml-10 mt-1" />
                   </td>
                   <td className="p-3"><StatusBadge status={c.status} /></td>
                   <td className="p-3 whitespace-nowrap space-x-2">

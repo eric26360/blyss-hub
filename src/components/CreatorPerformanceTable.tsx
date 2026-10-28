@@ -5,10 +5,12 @@
 
 import Link from "next/link";
 import { Fragment, useState } from "react";
+import { TagChips } from "@/components/CreatorTags";
 import { Card } from "@/components/Guard";
 import { parseAdName } from "@/lib/ad-naming";
 import { formatDay } from "@/lib/checkins";
 import type { AdType, CreativeTotals } from "@/lib/creative-performance";
+import type { CreatorTags } from "@/lib/creator-tags";
 import { pct, ratio, type CreatorRollup } from "@/lib/creator-performance";
 import { money } from "@/lib/format";
 import type { DirectoryCreator } from "@/lib/use-creator-performance";
@@ -39,6 +41,7 @@ export function CreatorPerformanceTable({
   canClassify,
   onSetType,
   emptyText,
+  tags,
 }: {
   title: string;
   subtitle?: string;
@@ -48,6 +51,7 @@ export function CreatorPerformanceTable({
   canClassify: boolean;
   onSetType?: (adName: string, type: AdType) => void;
   emptyText: string;
+  tags?: CreatorTags;
 }) {
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: "spend", desc: true });
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -131,6 +135,7 @@ export function CreatorPerformanceTable({
                             {c?.is_top && <span className="ml-1 text-amber-600">⭐ Top</span>}
                             {c?.is_trybe && <span className="ml-1 text-violet-600">Trybe</span>}
                           </p>
+                          {c && tags && <TagChips tags={tags.tagsOf(c.id)} ct={tags} className="mt-1" />}
                         </div>
                       </div>
                     </td>

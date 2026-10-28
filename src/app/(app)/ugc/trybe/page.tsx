@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar, StatusBadge } from "@/components/CreatorBits";
 import { CreatorPerformanceTable } from "@/components/CreatorPerformanceTable";
+import { TagChips, TagFilters } from "@/components/CreatorTags";
 import { DateRangeControls, useDateRange } from "@/components/DateRange";
 import { Card, Guard, PageHeader } from "@/components/Guard";
 import { formatDay } from "@/lib/checkins";
@@ -16,6 +17,7 @@ import {
   rollupSeeding,
   type SeedingSend,
 } from "@/lib/creator-performance";
+import { hasTagFilter, matchesTagFilter, useCreatorTags, type TagFilter } from "@/lib/creator-tags";
 import { money } from "@/lib/format";
 import { useSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/client";
@@ -34,6 +36,8 @@ export default function TrybePage() {
   const [ready, setReady] = useState(true);
   const [adding, setAdding] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const ct = useCreatorTags();
+  const [tagFilter, setTagFilter] = useState<TagFilter>({});
 
   useEffect(() => {
     supabase
@@ -47,7 +51,7 @@ export default function TrybePage() {
       });
   }, [supabase, range.from, range.to]);
 
-  const members = directory.filter((c) => c.is_trybe);
+  const members = directory.filter((c) => c.is_trybe && matchesTagFilter(ct.byCreator.get(c.id), tagFilter));
   const memberHandles = new Set(members.flatMap((c) => [normalizeHandle(c.instagram), normalizeHandle(c.tiktok)]).filter(Boolean));
   const memberIds = new Set(members.map((c) => c.id));
 
@@ -105,6 +109,11 @@ export default function TrybePage() {
             )}
           </Card>
 
+          {ct.ready && (
+            <div className="mb-4">
+              <TagFilters ct={ct} value={tagFilter} onChange={setTagFilter} />
+            </div>
+          )}
           {error && <p className="text-sm text-rose-600 mb-3">{error}</p>}
 
           <h2 className="text-lg font-semibold mb-2">Members ({members.length})</h2>
@@ -139,6 +148,7 @@ export default function TrybePage() {
                             {c.trybe_notes && <span className="block text-xs font-normal text-stone-500">{c.trybe_notes}</span>}
                           </span>
                         </Link>
+                        <TagChips tags={ct.tagsOf(c.id)} ct={ct} className="ml-10 mt-1" />
                       </td>
                       <td className="p-3"><StatusBadge status={c.status} /></td>
                       <td className="p-3 whitespace-nowrap">{c.trybe_joined_on ? formatDay(c.trybe_joined_on) : "—"}</td>
@@ -161,7 +171,9 @@ export default function TrybePage() {
                 {members.length === 0 && (
                   <tr>
                     <td colSpan={10} className="p-6 text-center text-stone-500">
-                      No Trybe creators yet. Add one above, or from a creator&apos;s profile.
+                      {hasTagFilter(tagFilter)
+                        ? "No Trybe creators have these tags."
+                        : "No Trybe creators yet. Add one above, or from a creator\u2019s profile."}
                     </td>
                   </tr>
                 )}
@@ -178,6 +190,7 @@ export default function TrybePage() {
             canClassify={isCurator && classificationsReady}
             onSetType={setAdType}
             emptyText="No Trybe creator ads spent in this period."
+            tags={ct}
           />
           <p className="text-xs text-stone-500">
             Ads are matched to a Trybe creator by the Instagram or TikTok handle on their profile. Seeding counts sends shipped in the period.

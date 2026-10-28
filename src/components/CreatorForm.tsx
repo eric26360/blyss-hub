@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { TagPicker } from "@/components/CreatorTags";
+import { saveCreatorTags, useCreatorTags } from "@/lib/creator-tags";
 import { createClient } from "@/lib/supabase/client";
 import { useSession } from "@/lib/session";
 import { CREATOR_STATUSES, CREATOR_STATUS_LABEL, type Creator } from "@/lib/ugc";
@@ -63,6 +65,10 @@ export function CreatorForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const ct = useCreatorTags();
+  const savedTags = (creator && ct.byCreator.get(creator.id)) || new Set<string>();
+  // null until the person changes a tag, so tags still loading aren't overwritten.
+  const [tags, setTags] = useState<Set<string> | null>(null);
 
   const set = (key: keyof DirectoryCreator, v: string) =>
     setValues((prev) => ({ ...prev, [key]: v === "" ? null : MONEY.has(key) ? Number(v) : v }));
@@ -78,8 +84,18 @@ export function CreatorForm({
     const res = creator
       ? await supabase.from("ugc_creators").update(payload).eq("id", creator.id).select("id").single()
       : await supabase.from("ugc_creators").insert(payload).select("id").single();
+    if (res.error) {
+      setBusy(false);
+      return setError(res.error.message);
+    }
+    if (tags) {
+      const tagError = await saveCreatorTags(supabase, res.data.id, savedTags, tags);
+      if (tagError) {
+        setBusy(false);
+        return setError(`Creator saved, but tags weren't: ${tagError}`);
+      }
+    }
     setBusy(false);
-    if (res.error) return setError(res.error.message);
     onSaved(res.data.id);
   };
 
@@ -169,6 +185,11 @@ export function CreatorForm({
             className={input}
           />
         </label>
+      </div>
+
+      <div>
+        <h3 className="font-medium mb-3">Casting tags</h3>
+        <TagPicker ct={ct} value={tags ?? savedTags} onChange={setTags} />
       </div>
 
       {/* Trybe fields exist once 0007 has been run; only shown when editing a creator that has them. */}
